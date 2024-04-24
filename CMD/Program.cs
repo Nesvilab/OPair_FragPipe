@@ -109,7 +109,7 @@ namespace CMD
             // trim file/directory paths (if provided) and confirm all specified files exist
             if (settings.psmFile != null)
             {
-                settings.psmFile = settings.psmFile.Trim();
+                settings.psmFile = settings.psmFile.Replace("\"", "").Trim();
                 if (!File.Exists(settings.psmFile))
                 {
                     Console.WriteLine("Error: PSM file not found at {0}", settings.psmFile);
@@ -118,7 +118,7 @@ namespace CMD
             }
             if (settings.scanpairFile != null)
             {
-                settings.scanpairFile = settings.scanpairFile.Trim();
+                settings.scanpairFile = settings.scanpairFile.Replace("\"", "").Trim();
                 if (!File.Exists(settings.scanpairFile))
                 {
                     Console.WriteLine("Error: Scan pair file not found at {0}", settings.scanpairFile);
@@ -130,7 +130,7 @@ namespace CMD
             bool rawfilesFound = false;
             if (settings.lcmsFilesList != null)
             {
-                settings.lcmsFilesList = settings.lcmsFilesList.Trim();
+                settings.lcmsFilesList = settings.lcmsFilesList.Replace("\"", "").Trim();
                 if (!File.Exists(settings.lcmsFilesList))
                 {
                     Console.WriteLine("Error: lcms file not found at {0}", settings.lcmsFilesList);
@@ -142,7 +142,7 @@ namespace CMD
             }
             if (settings.rawfileDirectory != null)
             {
-                settings.rawfileDirectory = settings.rawfileDirectory.Trim();
+                settings.rawfileDirectory = settings.rawfileDirectory.Replace("\"", "").Trim();
                 if (!Directory.Exists(settings.rawfileDirectory))
                 {
                     if (!rawfilesFound)
@@ -161,23 +161,12 @@ namespace CMD
                 return false;
             }
 
-            // glyco database checking
-            if (settings.glycoDatabase != null)
-            {
-                settings.glycoDatabase = settings.glycoDatabase.Trim();
-                if (!File.Exists (settings.glycoDatabase))
-                {
-                    Console.WriteLine("Error: glycan database file not found at {0}, please check the file and retry", settings.glycoDatabase);
-                    return false;
-                }
-            }
-
             // glycan residues file
             if (settings.glycanResiduesFile != null)
             {
                 if (settings.glycanResiduesFile.Length > 0)
                 {
-                    settings.glycanResiduesFile.Trim();
+                    settings.glycanResiduesFile = settings.glycanResiduesFile.Replace("\"", "").Trim();
                     if (!File.Exists(settings.glycanResiduesFile))
                     {
                         Console.WriteLine("Error: glycan residues file not found at {0}, please check the file and retry", settings.glycanResiduesFile);
@@ -195,7 +184,7 @@ namespace CMD
             {
                 if (settings.glycanModsFile.Length > 0)
                 {
-                    settings.glycanModsFile.Trim();
+                    settings.glycanModsFile = settings.glycanModsFile.Replace("\"", "").Trim();
                     if (!File.Exists(settings.glycanModsFile))
                     {
                         Console.WriteLine("Error: glycan mods file not found at {0}, please check the file and retry", settings.glycanModsFile);
@@ -212,7 +201,7 @@ namespace CMD
             if (settings.oxoFilter != null)
             {
                 // confirm the path exists if not using the default (internal) file
-                settings.oxoFilter = settings.oxoFilter.Trim();
+                settings.oxoFilter = settings.oxoFilter.Replace("\"", "").Trim();
                 if (!settings.oxoFilter.Equals("default"))
                 {
                     settings.oxoFilter = settings.oxoFilter.Trim();

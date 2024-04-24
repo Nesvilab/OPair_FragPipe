@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,22 @@ namespace EngineLayer
         //kinds = Monosaccharide.GetCharMassDic(GlobalVariables.Monosaccharides).Keys.ToString();
         private static string kinds;
         private static Regex SimpleKindPattern = new Regex(@"[NHAGFPSYCXUM][0-9]+");
+
+        /**
+         * Handler for file or glycan list passed to this parameter. Detect if file or glycan list and parse accordingly.
+         */
+        public static IEnumerable<Glycan> LoadGlycanDatabase(string fileOrGlycans, bool ToGenerateIons, bool IsLoadOGlycan)
+        {
+            if (File.Exists(fileOrGlycans))
+            {
+                return LoadGlycan(fileOrGlycans, ToGenerateIons, IsLoadOGlycan);
+            }
+            else
+            {
+                // the provided string is not a file, so load it as a glycan list
+                return LoadGlycanList(fileOrGlycans, ToGenerateIons, IsLoadOGlycan);
+            }
+        }
 
         //Load Glycan. Generally, glycan-ions should be generated for N-Glycopepitdes which produce Y-ions; MS method couldn't produce o-glycan-ions.
         public static IEnumerable<Glycan> LoadGlycan(string filePath, bool ToGenerateIons, bool IsLoadOGlycan)
@@ -58,6 +75,30 @@ namespace EngineLayer
             else
             {
                 return LoadStructureGlycan(filePath, ToGenerateIons, IsLoadOGlycan);
+            }
+        }
+
+        public static IEnumerable<Glycan> LoadGlycanList(string glycanList, bool ToGenerateIons, bool IsOGlycanSearch)
+        {
+            string[] splits = Regex.Split(glycanList, "[,;\\s]");
+            int id = 1;
+            foreach (string glycanStr in splits)
+            {
+                var kind = String2Kind(glycanStr);
+                var glycan = new Glycan(kind);
+                glycan.GlyId = id++;
+                if (ToGenerateIons)
+                {
+                    if (IsOGlycanSearch)
+                    {
+                        glycan.Ions = OGlycanCompositionCombinationChildIons(kind);
+                    }
+                    else
+                    {
+                        glycan.Ions = NGlycanCompositionFragments(kind);
+                    }
+                }
+                yield return glycan;
             }
         }
 

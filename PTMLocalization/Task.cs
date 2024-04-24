@@ -30,9 +30,7 @@ namespace PTMLocalization
                 }
                 catch (Exception ex)
                 {
-                    // file not found - warn user and exit
-                    Console.WriteLine("No Glycan Database found at {0}. Exiting.", glycoDatabase);
-                    return 2;
+                    // ignore - glycans passed as list, not file
                 }
 
             }

@@ -65,7 +65,7 @@ namespace EngineLayer
                             symbol = getSymbol(name);
                         }
 
-                        mono = new Monosaccharide(monoCounter, name, symbol, (int) (double.Parse(xs[1].Trim()) * 10000));
+                        mono = new Monosaccharide(monoCounter, name, symbol, (int) (double.Parse(xs[1].Trim()) * 1E5));
                         monoCounter++;
                     }
                     sugars.Add(mono);

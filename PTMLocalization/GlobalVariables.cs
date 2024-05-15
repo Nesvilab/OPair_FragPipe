@@ -99,7 +99,7 @@ namespace EngineLayer
             Console.WriteLine("Using residue definitions:");
             foreach (Monosaccharide mono in monosaccharides)
             {
-                Console.WriteLine($"\t{mono.Id}: {mono.Name} = {mono.Mass * 0.0001:F4}");
+                Console.WriteLine($"\t{mono.Id}: {mono.Name} = {mono.Mass * 0.00001:F4}");
             }
         }
 

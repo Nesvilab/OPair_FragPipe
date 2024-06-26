@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Easy.Common.Extensions;
 
 namespace EngineLayer
 {
@@ -84,21 +85,25 @@ namespace EngineLayer
             int id = 1;
             foreach (string glycanStr in splits)
             {
-                var kind = String2Kind(glycanStr);
-                var glycan = new Glycan(kind);
-                glycan.GlyId = id++;
-                if (ToGenerateIons)
+                if (glycanStr.IsNotNullOrEmptyOrWhiteSpace())
                 {
-                    if (IsOGlycanSearch)
+                    var kind = String2Kind(glycanStr);
+                    var glycan = new Glycan(kind);
+                    glycan.GlyId = id++;
+                    if (ToGenerateIons)
                     {
-                        glycan.Ions = OGlycanCompositionCombinationChildIons(kind);
+                        if (IsOGlycanSearch)
+                        {
+                            glycan.Ions = OGlycanCompositionCombinationChildIons(kind);
+                        }
+                        else
+                        {
+                            glycan.Ions = NGlycanCompositionFragments(kind);
+                        }
                     }
-                    else
-                    {
-                        glycan.Ions = NGlycanCompositionFragments(kind);
-                    }
+
+                    yield return glycan;
                 }
-                yield return glycan;
             }
         }
 

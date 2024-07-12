@@ -52,17 +52,7 @@ namespace EngineLayer
         private static void SetUpDataDirectory()
         {
             // get data directory
-            var pathToProgramFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            if (!String.IsNullOrWhiteSpace(pathToProgramFiles) && AppDomain.CurrentDomain.BaseDirectory.Contains(pathToProgramFiles)
-                && !AppDomain.CurrentDomain.BaseDirectory.Contains("Jenkins"))
-            {
-                DataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MetaMorpheus");
-            }
-            else
-            {
-                DataDir = AppDomain.CurrentDomain.BaseDirectory;
-            }
-
+            DataDir = AppDomain.CurrentDomain.BaseDirectory;
         }
 
         private static void LoadGlycans(string? monosaccharidePath, string? oxoniumPath, string? additionalMonosaccharidePath)

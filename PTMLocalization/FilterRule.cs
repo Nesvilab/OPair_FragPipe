@@ -1,11 +1,6 @@
-﻿using Easy.Common.Extensions;
-using EngineLayer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EngineLayer
 {
@@ -29,12 +24,12 @@ namespace EngineLayer
         public static List<FilterRule> LoadOxoniumFilters(string filePath)
         {
             List<FilterRule> rules = new();
-            using (StreamReader lines = new StreamReader(filePath))
+            using (var lines = new StreamReader(filePath))
             {
-                bool firstLine = true;
+                var firstLine = true;
                 while (lines.Peek() != -1)
                 {
-                    string line = lines.ReadLine();
+                    var line = lines.ReadLine();
 
                     if (firstLine)
                     {
@@ -44,33 +39,33 @@ namespace EngineLayer
                     }
 
                     var splits = line.Replace('"', ' ').Split('\t');
-
-                    // Parse mass(es)
-                    var massSplits = splits[0].Split(',');
-                    List<double> masses = new();
-                    foreach (string mass in massSplits)
+                    
+                    // for backwards compatibility
+                    var startCol = 1;
+                    if (splits[0].Contains('('))
                     {
-                        masses.Add(double.Parse(mass.Trim()));
+                        startCol = 0;   // new version has one less column
                     }
 
-                    // Parse monosaccharide rules
+                    // parse rules from required residue composition
+                    var kind = GlycanDatabase.String2Kind(splits[startCol]);
                     Dictionary<byte, int> ruleDict = new();
-                    int i = 1;
-                    while (i < splits.Length)
+                    for (var i = 0; i < kind.Length; i++)
                     {
-                        if (splits[i].IsNullOrEmpty())
+                        if (kind[i] > 0)
                         {
-                            i += 2;
-                            continue;
+                            ruleDict[(byte) i] = kind[i];
                         }
-                        byte id = byte.Parse(splits[i].Trim());
-                        i++;
-                        int count = int.Parse(splits[i].Trim());
-                        i++;
-                        ruleDict[id] = count;
                     }
+                    
+                    // Parse mass
+                    List<double> masses = new();
+                    var glycan = new Glycan(kind);
+                    var startMass = glycan.Mass / 1E5 + Chemistry.Constants.ProtonMass;
+                    startMass += Double.Parse(splits[startCol + 1]);
+                    masses.Add(startMass);
 
-                    FilterRule rule = new FilterRule(masses, ruleDict);
+                    var rule = new FilterRule(masses, ruleDict);
                     rules.Add(rule);
                 }
             }

@@ -57,7 +57,7 @@ namespace EngineLayer
 
         private static void LoadGlycans(string? monosaccharidePath, string? oxoniumPath, string? additionalMonosaccharidePath)
         {
-            monosaccharidePath ??= Path.Combine(DataDir, @"Glycan_Mods", @"Monosaccharide.tsv");    // use default if not provided
+            monosaccharidePath ??= Path.Combine(DataDir, @"Glycan_Mods", @"glycan_residues.txt");    // use default if not provided
             List<Monosaccharide> residues = Monosaccharide.LoadMonosaccharide(monosaccharidePath, 0);
             if (additionalMonosaccharidePath != null)
             {
@@ -67,7 +67,7 @@ namespace EngineLayer
             Monosaccharides = residues.ToArray();
             printResidueSettings(Monosaccharides);
 
-            oxoniumPath ??= Path.Combine(DataDir, @"Glycan_Mods", @"OxoniumFilter.tsv");            // use default if not provided
+            oxoniumPath ??= Path.Combine(DataDir, @"Glycan_Mods", @"oxonium_filter.txt");            // use default if not provided
             OxoniumFilters = FilterRule.LoadOxoniumFilters(oxoniumPath);
 
             OGlycanLocations = new List<string>();

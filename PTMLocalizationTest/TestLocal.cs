@@ -189,8 +189,9 @@ namespace PTMLocalizationTest
             int[] isotopes = { 0, 1, 2 };
             bool filterOxonium = false;
             double oxoMinInt = 0.1;
+            string[] allowedSites = new string[]{"S", "T"};
 
-            var localizer = new MSFragger_RunLocalization(psmFile, scanpairFile, rawfileDirectory, null, glycoDatabase, maxNumGlycans, PrecursorMassTolerance, ProductMassTolerance, isotopes, filterOxonium, oxoMinInt, 0);
+            var localizer = new MSFragger_RunLocalization(psmFile, scanpairFile, rawfileDirectory, null, glycoDatabase, maxNumGlycans, PrecursorMassTolerance, ProductMassTolerance, isotopes, filterOxonium, oxoMinInt, 0, allowedSites);
             localizer.Localize();
         }
 

@@ -32,6 +32,7 @@ namespace PTMLocalization
         private double oxoMinRelativeIntensity;
         private int numThreads;
         private MSFragger_PSMTable PSMtable;
+        private string[] allowedSites;
 
         private Dictionary<string, string> lcmsPaths;
 
@@ -52,7 +53,7 @@ namespace PTMLocalization
 
         public MSFragger_RunLocalization(string _psmFile, string _scanpairFile, string _rawfilesDirectory, string lcmsFileList, 
             string _o_glycan_database_path, int _maxOGlycansPerPeptide, Tolerance _PrecursorMassTolerance, Tolerance _ProductMassTolerance, 
-            int[] _isotopes, bool _filterOxonium, double _oxoMinRelativeIntensity, int _numThreads)
+            int[] _isotopes, bool _filterOxonium, double _oxoMinRelativeIntensity, int _numThreads, string[] _allowedSites)
         {
             psmFile = _psmFile;
             scanpairFile = _scanpairFile;
@@ -66,6 +67,7 @@ namespace PTMLocalization
             filterOxonium = _filterOxonium;
             oxoMinRelativeIntensity = _oxoMinRelativeIntensity;
             numThreads = _numThreads;
+            allowedSites = _allowedSites;
 
             // Initial Setup
             PSMtable = new(psmFile);
@@ -490,7 +492,7 @@ namespace PTMLocalization
 
             // generate glycan modification sites
             List<int> n_modPos = new List<int>();
-            var o_modPos = GlycoPeptides.GetPossibleModSites(peptide, new string[] { "S", "T" }).OrderBy(p => p).ToList();
+            var o_modPos = GlycoPeptides.GetPossibleModSites(peptide, allowedSites).OrderBy(p => p).ToList();
 
             int[] _modPos;
             string[] modMotifs;

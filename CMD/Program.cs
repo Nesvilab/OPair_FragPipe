@@ -71,13 +71,31 @@ namespace CMD
                 Console.WriteLine(String.Format("Invalid oxonium intensity ratio. Please set oxonium ratio between 0 and 1. Oxonium filtering DISABLED"));
             }
 
+            string[] allowedSites;
+            if (settings.allowedSites != null)
+            {
+                // prevent empty array, non-capital letters, and duplicates
+                var matches = Regex.Matches(settings.allowedSites, "[A-Z]");
+                allowedSites = matches.Select(c => c.Value).ToHashSet().ToArray();
+                if (allowedSites.Length == 0)
+                {
+                    Console.WriteLine($"No sites could be parsed from entered parameter \"{settings.allowedSites}\". Please enter capital letter(s) for each amino acid residue to allow and try again.");
+                    errorCode = 1;
+                    return errorCode;
+                }
+            }
+            else
+            {
+                allowedSites = new[] { "S", "T" };
+            }
+
             try
             {
                 var task = new Task();
                 errorCode = task.run_msfragger(settings.productPpmTol, settings.precursorPpmTol, settings.psmFile, 
                     settings.scanpairFile, settings.rawfileDirectory, settings.lcmsFilesList, settings.glycoDatabase, 
                     settings.maxNumGlycans, settings.minIsotopeError, settings.maxIsotopeError, doOxoFilter, settings.oxoMinInt,
-                    settings.numThreads);
+                    settings.numThreads, allowedSites);
                 if (errorCode == 0)
                 {
                     Console.WriteLine("Run finished.");

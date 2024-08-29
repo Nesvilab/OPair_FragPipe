@@ -61,6 +61,9 @@ namespace CMD
 
         [Option('t', Default = 0, HelpText = "[Optional] Number of threads")]
         public int numThreads { get; set; }
+        
+        [Option('z', Default = "ST", HelpText = "[Optional] Specify allowed residues. Default: ST")]
+        public string allowedSites { get; set; }
 
         public override string ToString()
         {
@@ -74,6 +77,7 @@ namespace CMD
             x += " -x " + glycanResiduesFile;
             x += " -y " + glycanModsFile;
             x += " -n " + maxNumGlycans.ToString();
+            x += " -z " + allowedSites;
             x += " -i " + minIsotopeError.ToString(); 
             x += " -j " + maxIsotopeError.ToString();
             x += " -f " + oxoFilter;

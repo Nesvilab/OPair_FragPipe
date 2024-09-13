@@ -72,7 +72,7 @@ namespace CMD
             }
 
             string[] allowedSites;
-            if (settings.allowedSites != null)
+            if (settings.allowedSites != null && settings.allowedSites.Trim().Length > 0)
             {
                 // prevent empty array, non-capital letters, and duplicates
                 var matches = Regex.Matches(settings.allowedSites, "[A-Z]");

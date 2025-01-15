@@ -37,7 +37,8 @@ namespace PTMLocalization
         private Dictionary<string, string> lcmsPaths;
 
         public static readonly double AveragineIsotopeMass = 1.00235;
-        public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
+        public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tDeltaScore\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
+        // public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
         //public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tSite Probabilities";
         public static readonly int OUTPUT_LENGTH = OPAIR_HEADERS.Split("\t").Length;
         public static readonly string EMPTY_OUTPUT = String.Join("\t", new string[OUTPUT_LENGTH]);

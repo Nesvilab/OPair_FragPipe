@@ -298,6 +298,21 @@ namespace EngineLayer.GlycoSearch
             }
         }
 
+        public static double CalculateDeltaScore(List<Route> allRoutes)
+        {
+            double bestScore = 0;
+            double secondScore = 0;
+            foreach (var route in allRoutes)
+            {
+                if (route.Score >= bestScore)
+                {
+                    secondScore = bestScore;
+                    bestScore = route.Score;
+                }
+            }
+            return bestScore - secondScore;
+        }
+
         //Dictionary<int, List<Tuple<int, double>>> is <modPos, List<glycanId, site probability>>
         public static Dictionary<int, List<Tuple<int, double>>> CalSiteSpecificLocalizationProbability(List<Route> routes, int[] modPos)
         {

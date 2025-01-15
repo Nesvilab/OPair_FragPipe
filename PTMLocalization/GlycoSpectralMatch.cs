@@ -82,7 +82,7 @@ namespace EngineLayer.GlycoSearch
         //Glyco Info
         public List<LocalizationGraph> LocalizationGraphs { get; }  //Graph-based Localization information.
         public List<Route> Routes { get; set; } //Localized modification sites and modfication ID.
-
+        public double DeltaScore { get; set; }  // difference between best and second-best routes
         public double ScanInfo_p { get; set; }  //Scan P value, Used for Localization probability calculation. Ref PhosphoRS paper.
 
         public int Thero_n { get; set; } //Scan n value. Used for Localization probability calculation. Ref PhosphoRS paper.
@@ -224,6 +224,7 @@ namespace EngineLayer.GlycoSearch
                 if (Routes != null)
                 {
                     sb.Append(LocalizationLevel); sb.Append("\t");
+                    sb.Append(DeltaScore); sb.Append("\t");
 
                     string local_peptide = "";
                     string local_protein = "";

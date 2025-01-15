@@ -129,6 +129,7 @@ namespace EngineLayer.GlycoSearch
                     {
                         allRoutes.AddRange(LocalizationGraph.GetAllPaths_CalP(graph, gsm.ScanInfo_p, gsm.Thero_n));
                     }
+                    gsm.DeltaScore = LocalizationGraph.CalculateDeltaScore(allRoutes);
                     gsm.SiteSpeciLocalProb = LocalizationGraph.CalSiteSpecificLocalizationProbability(allRoutes, gsm.LocalizationGraphs.First().ModPos);
                 }
             }

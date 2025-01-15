@@ -43,6 +43,24 @@ namespace EngineLayer.GlycoSearch
             }
 
         }
+        
+        public static GlycanBox GetGraphGlycanBox(LocalizationGraph graph, GlycoType type)
+        {
+
+            if (type == GlycoType.OGlycoPep)
+            {
+                return GlycanBox.OGlycanBoxes[graph.ModBoxId];
+            }
+            else if (type == GlycoType.NGlycoPep)
+            {
+                return GlycanBox.NGlycanBoxes[graph.ModBoxId];
+            }
+            else
+            {
+                return GlycanBox.MixedModBoxes[graph.ModBoxId];
+            }
+
+        }
 
         public static Glycan[] GetFirstGraphGlycans(GlycoSpectralMatch gsm, GlycanBox glycanBox)
         {
@@ -82,7 +100,9 @@ namespace EngineLayer.GlycoSearch
         //Glyco Info
         public List<LocalizationGraph> LocalizationGraphs { get; }  //Graph-based Localization information.
         public List<Route> Routes { get; set; } //Localized modification sites and modfication ID.
-        public double DeltaScore { get; set; }  // difference between best and second-best routes
+        public double DeltaScoreRoute { get; set; }  // difference between best and second-best routes in the best graph (i.e., localization delta score)
+        public double DeltaScoreGraph { get; set; }  // difference between best routes in the best and second-best graphs (i.e., glycan composition delta score)
+        public GlycanBox secondBestBox { get; set; }    // for recording next-best composition
         public double ScanInfo_p { get; set; }  //Scan P value, Used for Localization probability calculation. Ref PhosphoRS paper.
 
         public int Thero_n { get; set; } //Scan n value. Used for Localization probability calculation. Ref PhosphoRS paper.
@@ -190,6 +210,20 @@ namespace EngineLayer.GlycoSearch
             return idDict;
         }
 
+        // calculate the difference in score between the top-scoring route of the best and second best graphs
+        public static double CalculateGraphDeltaScore(GlycoSpectralMatch gsm, List<LocalizationGraph> allGraphs)
+        {
+            if (allGraphs.Count > 1)
+            {
+                var sortedGraphs = allGraphs.OrderByDescending(graph => graph.TotalScore).ToList();
+                gsm.secondBestBox = GetGraphGlycanBox(sortedGraphs[1], gsm.GlycanType);
+                return sortedGraphs[0].TotalScore - sortedGraphs[1].TotalScore;
+            }
+
+            // not applicable: need at least 2 graphs to calculate delta
+            return -1;
+        }
+
         #endregion
 
         public byte[] getTotalKind()
@@ -221,10 +255,24 @@ namespace EngineLayer.GlycoSearch
                 sb.Append(string.Join(",", glycans.Select(p => p.Composition).ToArray()));
                 sb.Append("\t");
 
+                if (DeltaScoreGraph > -1)
+                {
+                    // leave blank if <2 graphs
+                    sb.Append(DeltaScoreGraph);    
+                    sb.Append('\t');
+                    // get second graph compositions list
+                    sb.Append(string.Join(",", GetFirstGraphGlycans(this, secondBestBox).Select(p => p.Composition).ToArray()));
+                }
+                else
+                {
+                    sb.Append('\t');
+                }
+                sb.Append('\t');
+
                 if (Routes != null)
                 {
                     sb.Append(LocalizationLevel); sb.Append("\t");
-                    sb.Append(DeltaScore); sb.Append("\t");
+                    sb.Append(DeltaScoreRoute); sb.Append("\t");
 
                     string local_peptide = "";
                     string local_protein = "";

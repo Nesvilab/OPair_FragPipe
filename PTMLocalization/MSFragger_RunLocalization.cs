@@ -37,7 +37,7 @@ namespace PTMLocalization
         private Dictionary<string, string> lcmsPaths;
 
         public static readonly double AveragineIsotopeMass = 1.00235;
-        public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tDeltaScore\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
+        public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tComposition Delta Score\tNext Best Composition\tConfidence Level\tLocalization Delta Score\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
         // public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
         //public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tSite Probabilities";
         public static readonly int OUTPUT_LENGTH = OPAIR_HEADERS.Split("\t").Length;
@@ -554,7 +554,7 @@ namespace PTMLocalization
                 {
                     gsm.localizerOutput = "No match to glycan delta mass" + EMPTY_OUTPUT_WITH_PAIRED_SCAN + string.Format("\t{0}", ms2Scan.TheScan.OneBasedScanNumber);
                 }
-                    return gsm;      
+                return gsm;      
             }
             var best_graph = graphs.OrderByDescending(p => p.TotalScore).First();
             gsm = new GlycoSpectralMatch(new List<LocalizationGraph> { best_graph }, GlycoType.OGlycoPep);
@@ -563,6 +563,7 @@ namespace PTMLocalization
             gsm.oxoRatio = oxoRatio;
             gsm.NGlycanMotifExist = NglycMotifRegex.IsMatch(peptide.BaseSequence);
             GlycoSite.GlycoLocalizationCalculation(gsm, gsm.GlycanType, DissociationType.HCD, DissociationType.EThcD);
+            gsm.DeltaScoreGraph = GlycoSpectralMatch.CalculateGraphDeltaScore(gsm, graphs);
             gsm.localizerOutput = gsm.WriteLine(null) + string.Format("\t{0}", ms2Scan.TheScan.OneBasedScanNumber);
 
             return gsm;

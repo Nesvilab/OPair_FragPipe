@@ -83,43 +83,35 @@ namespace EngineLayer
          */
         private static char getSymbol(string name)
         {
-            char symbol = 'A';
-            bool loopedUpper = false;
-            bool loopedBoth = false;
-            char trySymbol = name.ToUpper()[0];
-            while (trySymbol <= 'Z')
+            char symbol = name.ToUpper()[0];
+            // try using the first letter of the name if it not already in use
+            if (!GlobalVariables.usedSymbols.Contains(symbol))
             {
-                if (!GlobalVariables.usedSymbols.Contains(trySymbol))
+                GlobalVariables.usedSymbols.Add(symbol);
+                return symbol;
+            }
+            // if the first letter is already in use, try to find the first available symbol alphabetically
+            symbol = 'A';
+            while (symbol <= 'z')
+            {
+                if (!GlobalVariables.usedSymbols.Contains(symbol))
                 {
-                    symbol = trySymbol;
-                    GlobalVariables.usedSymbols.Add(trySymbol);
+                    GlobalVariables.usedSymbols.Add(symbol);
                     return symbol;
                 }
-                if (trySymbol == 'Z')
+                if (symbol == 'z')
                 {
-                    if (loopedBoth)
-                    {
-                        // could not find an available char! 52 symbols already assigned.
-                        Console.WriteLine("Error: More than 52 glycan residues provided, not all could be assigned to symbols. Please specify fewer residues and try again.");
-                        throw new ArgumentOutOfRangeException("Too many glycan residues");
-                    }
-                    else
-                    {
-                        if (loopedUpper)
-                        {
-                            trySymbol = 'A';
-                            loopedUpper = true;
-                        } 
-                        else
-                        {
-                            trySymbol = 'a';
-                            loopedBoth = true;
-                        }
-                    }
+                    // could not find an available char! 52 symbols already assigned.
+                    Console.WriteLine("Error: More than 52 glycan residues provided, not all could be assigned to symbols. Please specify fewer residues and try again.");
+                    throw new ArgumentOutOfRangeException("Too many glycan residues");
+                }
+                if (symbol == 'Z')
+                {
+                    symbol = 'a'; // jump from upper case to lower case
                 }
                 else
                 {
-                    trySymbol = (char)(trySymbol + 1);
+                    symbol = (char)(symbol + 1);
                 }
             }
             return symbol;

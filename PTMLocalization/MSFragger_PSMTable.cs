@@ -257,8 +257,8 @@ namespace PTMLocalization
                         } 
                         else
                         {
-                            // find the first possible unlocalized site
-                            if (sites[i].ModSite < minSite)
+                            // find the first possible unlocalized site that is not already occupied by another glycan
+                            if (sites[i].ModSite < minSite && !assignedGlycPositions.Contains(sites[i].ModSite))
                             {
                                 siteIndex = i;
                                 minSite = sites[i].ModSite;
@@ -272,11 +272,12 @@ namespace PTMLocalization
                     string aa = peptide.Substring(peptide_site - 1, 1);
                     var comp = GlycanBox.GlobalOGlycans[glycID].Composition;
                     newAssignedMods.Add(string.Format("{0}{1}({2:0.0000})", peptide_site, aa, mass));
-                    assignedGlycPositions.Add(peptide_site - 1);
+                    assignedGlycPositions.Add(sites[siteIndex].ModSite);
 
                     // edit modified peptide col
                     existingPSMline = EditModifiedPeptide(existingPSMline, peptide, mass, peptide_site, aa);
 
+                    // remove this site from the list of possible sites after assigning
                     sites.Remove(sites[siteIndex]);
                 }
 

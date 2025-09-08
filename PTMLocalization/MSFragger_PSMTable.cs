@@ -242,17 +242,19 @@ namespace PTMLocalization
                 Dictionary<int, List<GlycoSite>> glycansByID = gsm.GetGlycoSitesByGlycanID();
                 List<int> assignedGlycPositions = new();
                 // each glycan is listed by ID (with no duplicates) in the glycanBox, so use that to assign positions
-                foreach (int glycID in testBox.ModIds)
+                foreach (int glycID in testBox.ModIds.OrderBy(id => glycansByID[id].Count))
                 {
                     var sites = glycansByID[glycID];
                     int siteIndex = 0;
                     int minSite = 10000;
+                    var foundPlacement = false;
                     for (int i=0; i < sites.Count; i++)
                     {
                         if (sites[i].IsLocalized)
                         {
                             // localized sites are always assigned, no need to look for lower number. Assign and stop the loop
                             siteIndex = i;
+                            foundPlacement = true;
                             break;
                         } 
                         else
@@ -262,6 +264,22 @@ namespace PTMLocalization
                             {
                                 siteIndex = i;
                                 minSite = sites[i].ModSite;
+                                foundPlacement = true;
+                            }
+                        }
+                    }
+                    if (!foundPlacement)
+                    {
+                        // all possible sites for this glycan are already occupied by other glycans. Place on first available site of any kind
+                        // should be exceedingly rare occurrence, but handle it just in case so that glycans are not doubled up on a site
+                        foreach (var site in gsm.LocalizationGraphs[0].ModPos)
+                        {
+                            if (!assignedGlycPositions.Contains(site))
+                            {
+                                var newSite = new GlycoSite(site, glycID, false);
+                                sites.Add(newSite);
+                                siteIndex = sites.IndexOf(newSite);
+                                break;
                             }
                         }
                     }

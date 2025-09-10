@@ -577,6 +577,9 @@ namespace EngineLayer
             {
                 fragpipeGlycan.Append(Kind[i] == 0 ? "" : GlobalVariables.Monosaccharides[i].Name + string.Format("({0})", Kind[i].ToString()));
             }
+
+            fragpipeGlycan.Append(" % ");
+            fragpipeGlycan.Append(((double) GetMass(Kind) / 1E5).ToString("F4"));
             return fragpipeGlycan.ToString();
         }
 

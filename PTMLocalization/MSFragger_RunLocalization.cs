@@ -353,7 +353,19 @@ namespace PTMLocalization
                     }
                     string scanpairName = rawfileEntry.Key + ".pairs";
                     string pairsFile = Path.Combine(rawfilesDirectory, scanpairName);
-                    scanPairs = MSFragger_PSMTable.ParseScanPairTable(pairsFile);
+                    if (File.Exists(pairsFile))
+                    {
+                        scanPairs = MSFragger_PSMTable.ParseScanPairTable(pairsFile);
+                    }
+                    else
+                    {
+                        // no pairs file, assume single scan type (but warn user)
+                        Console.WriteLine("Warning: no scan pair file found for raw file {0}, assuming single scan type", rawfileEntry.Key);
+                        foreach (MsDataScan scan in allScans)
+                        {
+                            scanPairs[scan.OneBasedScanNumber] = scan.OneBasedScanNumber;
+                        }
+                    }
                     Dictionary<int, string> scanDict = PSMtable.GetScanDict(rawfileEntry.Key);
                     Dictionary<int, string> output = new ();
 

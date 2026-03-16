@@ -98,8 +98,7 @@ namespace EngineLayer
         public static IEnumerable<GlycanBox> BuildGlycanBoxes(int maxNum, Glycan[] glycans, Modification[] modifications, int maxThreads = 1, double maxMass = 10000)
         {
             List<GlycanBox> results = new List<GlycanBox>();
-            ParallelOptions options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = maxThreads;
+            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = maxThreads };
             for (int i = 1; i <= maxNum; i++)
             {
                 Parallel.ForEach(Glycan.GetKCombsWithRept(Enumerable.Range(0, glycans.Length), i), options, idCombine =>

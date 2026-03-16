@@ -38,8 +38,6 @@ namespace PTMLocalization
 
         public static readonly double AveragineIsotopeMass = 1.00235;
         public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tComposition Delta Score\tNext Best Composition\tConfidence Level\tLocalization Delta Score\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
-        // public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tSite Probabilities\t138/144 Ratio\tHas N-Glyc Sequon\tPaired Scan Num";
-        //public static readonly string OPAIR_HEADERS = "O-Pair Score\tNumber of Glycans\tTotal Glycan Composition\tGlycan Site Composition(s)\tConfidence Level\tSite Probabilities";
         public static readonly int OUTPUT_LENGTH = OPAIR_HEADERS.Split("\t").Length;
         public static readonly string EMPTY_OUTPUT = String.Join("\t", new string[OUTPUT_LENGTH]);
         public static readonly string EMPTY_OUTPUT_WITH_PAIRED_SCAN = String.Join("\t", new string[OUTPUT_LENGTH - 1]);
@@ -110,9 +108,9 @@ namespace PTMLocalization
 
             if (spectraFile == null)
             {
-                Console.WriteLine(String.Format("Error: could not find spectra file from FragPipe list for file {0}", rawfileBase));
+                Console.WriteLine($"Error: could not find spectra file from FragPipe list for file {rawfileBase}");
                 return null;
-            } 
+            }
 
             // init directory path if reading from LCMS file list rather than from raw directory
             if (usingLcmsFilePath)
@@ -125,15 +123,13 @@ namespace PTMLocalization
             {
                 try
                 {
-                    Console.Write(String.Format("\tLoading {0}...", Path.GetFileName(spectraFile)));
+                    Console.Write($"\tLoading {Path.GetFileName(spectraFile)}...");
                     MsDataFile dataFile = Mzml.LoadAllStaticData(spectraFile, filter, searchForCorrectMs1PrecursorScan: false);
                     return dataFile;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Console.Write("\nError loading calibrated mzML file, loading base mzML...");
-                    //Console.WriteLine(String.Format("Error loading mzML file {0}", spectraFile));
-                    //Console.Write(ex.ToString());
                 }
             }
             // fallback attempts to locate the raw file if not using a filelist from FragPipe
@@ -141,11 +137,10 @@ namespace PTMLocalization
             {
                 // support "_uncalibrated.mzML" if present and "_calibrated.mzML" is not
                 spectraFile = Path.Combine(rawfilesDirectory, rawfileBase + CAL_INPUT_EXTENSION_FALLBACK);
-                filter = new FilteringParams();
                 try
                 {
-                    Console.Write(String.Format("\tLoading {0}...", Path.GetFileName(spectraFile)));
-                    return Mgf.LoadAllStaticData(spectraFile, filter);
+                    Console.Write($"\tLoading {Path.GetFileName(spectraFile)}...");
+                    return Mgf.LoadAllStaticData(spectraFile, new FilteringParams());
                 }
                 catch
                 {
@@ -157,11 +152,10 @@ namespace PTMLocalization
             {
                 // support legacy "_calibrated.MGF" if present and other options are not
                 spectraFile = Path.Combine(rawfilesDirectory, rawfileBase + CAL_INPUT_EXTENSION_FALLBACK2);
-                filter = new FilteringParams();
                 try
                 {
-                    Console.Write(String.Format("\tLoading {0}...", Path.GetFileName(spectraFile)));
-                    return Mgf.LoadAllStaticData(spectraFile, filter);
+                    Console.Write($"\tLoading {Path.GetFileName(spectraFile)}...");
+                    return Mgf.LoadAllStaticData(spectraFile, new FilteringParams());
                 }
                 catch
                 {
@@ -177,7 +171,7 @@ namespace PTMLocalization
             {
                 try
                 {
-                    Console.Write(String.Format("\tLoading {0}...", Path.GetFileName(spectraFile)));
+                    Console.Write($"\tLoading {Path.GetFileName(spectraFile)}...");
                     return Mzml.LoadAllStaticData(spectraFile, filter, searchForCorrectMs1PrecursorScan: false);
                 }
                 catch (Exception ex)
@@ -189,10 +183,9 @@ namespace PTMLocalization
             }
             else
             {
-                if (!mzmlNotFoundWarnings.ContainsKey(rawfileBase))
+                if (mzmlNotFoundWarnings.TryAdd(rawfileBase, true))
                 {
-                    Console.WriteLine("Warning: no mzML found for file {0}, PSMs from this file will NOT be localized!", rawfileBase);
-                    mzmlNotFoundWarnings.Add(rawfileBase, true);
+                    Console.WriteLine($"Warning: no mzML found for file {rawfileBase}, PSMs from this file will NOT be localized!");
                 }
                 return null;
             }
@@ -246,7 +239,7 @@ namespace PTMLocalization
                                 } 
                                 else
                                 {
-                                    Console.WriteLine(String.Format("Error: no mzML file found for input {0}", strippedLine));
+                                    Console.WriteLine($"Error: no mzML file found for input {strippedLine}");
                                     return false;
                                 }
                             }
@@ -261,7 +254,7 @@ namespace PTMLocalization
                         }
                         else
                         {
-                            Console.WriteLine(String.Format("Error: no mzML file found for input {0}", strippedLine));
+                            Console.WriteLine($"Error: no mzML file found for input {strippedLine}");
                             return false;
                         }
                     }
@@ -311,7 +304,7 @@ namespace PTMLocalization
             {
                 // write headers to PSM table
                 GlycoSpectralMatch emptyMatch = new GlycoSpectralMatch();
-                emptyMatch.localizerOutput = OPAIR_HEADERS;
+                emptyMatch.LocalizerOutput = OPAIR_HEADERS;
                 allOutput.Add(PSMtable.editPSMLine(emptyMatch, PSMtable.Headers.ToList(), GlycanBox.GlobalOGlycans, overwritePrevious, false));
             }
 
@@ -333,7 +326,7 @@ namespace PTMLocalization
                 {
                     // No raw data found! Write empty output for these PSMs
                     GlycoSpectralMatch emptyGSM = new GlycoSpectralMatch();
-                    emptyGSM.localizerOutput = EMPTY_OUTPUT;
+                    emptyGSM.LocalizerOutput = EMPTY_OUTPUT;
                     List<string> output = new();
                     foreach (string psmLine in rawfileEntry.Value)
                     {
@@ -414,11 +407,10 @@ namespace PTMLocalization
 
         private string LocalizePSM(Dictionary<int, MsDataScan> dataScansDict, Dictionary<int, int> scanPairs, string PSMline, MSFragger_PSMTable PSMtable, bool overwritePrevious, string currentRawfile)
         {
-            int scanNum = MSFragger_PSMTable.GetScanNum(PSMline);
-
             // Parse PSM information
             string[] lineSplits = PSMline.Split("\t");
             string spectrumString = lineSplits[PSMtable.SpectrumCol];
+            int scanNum = MSFragger_PSMTable.GetScanNum(spectrumString);
             string peptide = lineSplits[PSMtable.PeptideCol];
             double deltaMass = Double.Parse(lineSplits[PSMtable.DeltaMassCol]);
             string assignedMods = lineSplits[PSMtable.AssignedModCol];
@@ -429,37 +421,27 @@ namespace PTMLocalization
             {
                 // unmodified peptide - no localization
                 GlycoSpectralMatch emptyGSM = new GlycoSpectralMatch();
-                emptyGSM.localizerOutput = EMPTY_OUTPUT;
+                emptyGSM.LocalizerOutput = EMPTY_OUTPUT;
                 return PSMtable.editPSMLine(emptyGSM, lineSplits.ToList(), GlycanBox.GlobalOGlycans, overwritePrevious, false);
             }
 
             // retrieve the child scan num
-            int childScanNum;
-            if (scanPairs.ContainsKey(scanNum))
-            {
-                childScanNum = scanPairs[scanNum];
-            }
-            else
+            if (!scanPairs.TryGetValue(scanNum, out int childScanNum))
             {
                 // no paired child scan found - do not attempt localization
                 GlycoSpectralMatch emptyGSM = new GlycoSpectralMatch();
-                emptyGSM.localizerOutput = "No paired scan" + EMPTY_OUTPUT;
+                emptyGSM.LocalizerOutput = "No paired scan" + EMPTY_OUTPUT;
                 return PSMtable.editPSMLine(emptyGSM, lineSplits.ToList(), GlycanBox.GlobalOGlycans, overwritePrevious, false);
             }
 
             // retrieve the child scan
-            MsDataScan ms2Scan;
-            try
+            if (!dataScansDict.TryGetValue(childScanNum, out MsDataScan ms2Scan))
             {
-                ms2Scan = dataScansDict[childScanNum];
-            }
-            catch (KeyNotFoundException)
-            {
-                Console.Out.WriteLine(String.Format("Error: MS2 scan {0} not found in the spectrum file. No localization performed", childScanNum));
+                Console.Out.WriteLine($"Error: MS2 scan {childScanNum} not found in the spectrum file. No localization performed");
                 GlycoSpectralMatch emptyGSM = new GlycoSpectralMatch();
-                emptyGSM.localizerOutput = EMPTY_OUTPUT;
+                emptyGSM.LocalizerOutput = EMPTY_OUTPUT;
                 return PSMtable.editPSMLine(emptyGSM, lineSplits.ToList(), GlycanBox.GlobalOGlycans, overwritePrevious, false);
-            } 
+            }
 
             // finalize spectrum for search
             var scan = new Ms2ScanWithSpecificMass(ms2Scan, precursorMZ, precursorCharge, currentRawfile, 4, 3);
@@ -484,7 +466,7 @@ namespace PTMLocalization
             }
             catch (KeyNotFoundException)
             {
-                Console.WriteLine(string.Format("Error: HCD scan {0} not found in file {1}, could not calculate oxonium ratio or use oxonium filter", scanNum, currentRawfile));
+                Console.WriteLine($"Error: HCD scan {scanNum} not found in file {currentRawfile}, could not calculate oxonium ratio or use oxonium filter");
                 ratio = -1;
             }
 
@@ -514,14 +496,15 @@ namespace PTMLocalization
             // Get possible O-glycan boxes from delta mass
             List<LocalizationGraph> graphs = new List<LocalizationGraph>();
             bool oxoFilteredOut = false;
+            double[] glycanBoxMasses = GlycanBox.OGlycanBoxes.Select(p => p.Mass).ToArray();
             foreach (int isotope in isotopes)
             {
                 // include peptide mass for PPM calculation between precursor and glycan delta mass
                 double currentDeltaMass = glycanDeltaMass - (isotope * AveragineIsotopeMass) + peptide.MonoisotopicMass;
-                double maxMassErrorDa = currentDeltaMass * 0.000001 * PrecursorMassTolerance.Value;
+                double maxMassErrorDa = currentDeltaMass * 1e-6 * PrecursorMassTolerance.Value;
                 var possibleGlycanMassLow = currentDeltaMass - maxMassErrorDa - peptide.MonoisotopicMass;   // subtract peptide mass to get final glycan-only mass
                 var possibleGlycanMassHigh = currentDeltaMass + maxMassErrorDa - peptide.MonoisotopicMass;
-                int iDLow = GlycoPeptides.BinarySearchGetIndex(GlycanBox.OGlycanBoxes.Select(p => p.Mass).ToArray(), possibleGlycanMassLow);
+                int iDLow = GlycoPeptides.BinarySearchGetIndex(glycanBoxMasses, possibleGlycanMassLow);
 
                 while (iDLow < GlycanBox.OGlycanBoxes.Length && GlycanBox.OGlycanBoxes[iDLow].Mass <= possibleGlycanMassHigh)
                 {
@@ -560,23 +543,23 @@ namespace PTMLocalization
                 if (oxoFilteredOut)
                 {
                     // filtered out a possible match - note that
-                    gsm.localizerOutput = "No match after oxonium filtering" + EMPTY_OUTPUT_WITH_PAIRED_SCAN + string.Format("\t{0}", ms2Scan.TheScan.OneBasedScanNumber);
+                    gsm.LocalizerOutput = "No match after oxonium filtering" + EMPTY_OUTPUT_WITH_PAIRED_SCAN + $"\t{ms2Scan.TheScan.OneBasedScanNumber}";
                 }
                 else
                 {
-                    gsm.localizerOutput = "No match to glycan delta mass" + EMPTY_OUTPUT_WITH_PAIRED_SCAN + string.Format("\t{0}", ms2Scan.TheScan.OneBasedScanNumber);
+                    gsm.LocalizerOutput = "No match to glycan delta mass" + EMPTY_OUTPUT_WITH_PAIRED_SCAN + $"\t{ms2Scan.TheScan.OneBasedScanNumber}";
                 }
-                return gsm;      
+                return gsm;
             }
             var best_graph = graphs.OrderByDescending(p => p.TotalScore).First();
             gsm = new GlycoSpectralMatch(new List<LocalizationGraph> { best_graph }, GlycoType.OGlycoPep);
             gsm.ScanInfo_p = ms2Scan.TheScan.MassSpectrum.Size * ProductMassTolerance.GetRange(1000).Width / ms2Scan.TheScan.MassSpectrum.Range.Width;
             gsm.Thero_n = products.Count();
-            gsm.oxoRatio = oxoRatio;
+            gsm.OxoRatio = oxoRatio;
             gsm.NGlycanMotifExist = NglycMotifRegex.IsMatch(peptide.BaseSequence);
             GlycoSite.GlycoLocalizationCalculation(gsm, gsm.GlycanType, DissociationType.HCD, DissociationType.EThcD);
             gsm.DeltaScoreGraph = GlycoSpectralMatch.CalculateGraphDeltaScore(gsm, graphs);
-            gsm.localizerOutput = gsm.WriteLine(null) + string.Format("\t{0}", ms2Scan.TheScan.OneBasedScanNumber);
+            gsm.LocalizerOutput = gsm.WriteLine(null) + $"\t{ms2Scan.TheScan.OneBasedScanNumber}";
 
             return gsm;
         }
@@ -590,14 +573,16 @@ namespace PTMLocalization
          */
         public bool CheckOxoniumFilter(int iDLow, Dictionary<FilterRule, bool> oxoniumBools)
         {
+            var glycanKind = GlycanBox.OGlycanBoxes[iDLow].Kind;
             foreach (FilterRule rule in GlobalVariables.OxoniumFilters)
             {
                 bool matchedKind = true;
                 foreach (KeyValuePair<byte, int> requiredMonosaccharide in rule.MonosaccharidesRequired)
                 {
-                    if (GlycanBox.OGlycanBoxes[iDLow].Kind[requiredMonosaccharide.Key] < requiredMonosaccharide.Value)
+                    if (glycanKind[requiredMonosaccharide.Key] < requiredMonosaccharide.Value)
                     {
                         matchedKind = false;
+                        break;
                     }
                 }
                 // glycan has the monosaccharide(s) of interest to this filter: make sure oxonium(s) found

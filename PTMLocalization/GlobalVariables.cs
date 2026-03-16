@@ -65,7 +65,7 @@ namespace EngineLayer
                 residues.AddRange(Monosaccharide.LoadMonosaccharide(additionalMonosaccharidePath, (byte)residues.Count));
             }
             Monosaccharides = residues.ToArray();
-            printResidueSettings(Monosaccharides);
+            PrintResidueSettings(Monosaccharides);
 
             oxoniumPath ??= Path.Combine(DataDir, @"Glycan_Mods", @"oxonium_filter.txt");            // use default if not provided
             OxoniumFilters = FilterRule.LoadOxoniumFilters(oxoniumPath);
@@ -84,7 +84,7 @@ namespace EngineLayer
             }
         }
 
-        public static void printResidueSettings(Monosaccharide[] monosaccharides)
+        public static void PrintResidueSettings(Monosaccharide[] monosaccharides)
         {
             Console.WriteLine("Using residue definitions:");
             foreach (Monosaccharide mono in monosaccharides)

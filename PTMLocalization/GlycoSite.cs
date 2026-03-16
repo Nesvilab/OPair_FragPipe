@@ -24,21 +24,21 @@ namespace EngineLayer.GlycoSearch
         {
             List<GlycoSite> localizedGlycan = new List<GlycoSite>();
 
-            //Dictionary<string, int>: modsite-id, count
+            // Dictionary<string, int>: modsite-id, count
             Dictionary<string, int> seenModSite = new Dictionary<string, int>();
 
             foreach (var route in routes)
             {
                 foreach (var gs in route.Mods)
                 {
-                    var k = gs.ModSite.ToString() + "-" + gs.GlycanID.ToString();
-                    if (seenModSite.ContainsKey(k))
+                    string k = $"{gs.ModSite}-{gs.GlycanID}";
+                    if (seenModSite.TryGetValue(k, out int count))
                     {
-                        seenModSite[k] += 1;
+                        seenModSite[k] = count + 1;
                     }
                     else
                     {
-                        seenModSite.Add(k, 1);
+                        seenModSite[k] = 1;
                     }
                 }
             }
@@ -171,34 +171,5 @@ namespace EngineLayer.GlycoSearch
             }
         }
 
-        ////Deprecated function. 
-        ////For N-Glycopeptide localzation Level.
-        //public static void NGlycoCorrectLocalizationLevel(GlycoSpectralMatch gsm)
-        //{
-        //    //Correct nglycoSpectrumMatch localizationLevel to Level1b based on matched fragment ions.
-        //    if (gsm.ModPos.Count() == 1)
-        //    {
-        //        gsm.LocalizationLevel = LocalizationLevel.Level1b;
-        //        //correct localization.
-        //        if (gsm.MatchedFragmentIons.Where(p => (p.NeutralTheoreticalProduct.ProductType == ProductType.b || p.NeutralTheoreticalProduct.ProductType == ProductType.y) && p.NeutralTheoreticalProduct.NeutralLoss > 0).Count() > 0
-        //            || gsm.MatchedFragmentIons.Where(p => (p.NeutralTheoreticalProduct.ProductType == ProductType.c && p.NeutralTheoreticalProduct.AminoAcidPosition >= gsm.ModPos[0] - 1) || (p.NeutralTheoreticalProduct.ProductType == ProductType.zDot && p.NeutralTheoreticalProduct.AminoAcidPosition <= gsm.ModPos[0] - 1)).Count() > 0)
-        //        {
-        //            gsm.LocalizationLevel = LocalizationLevel.Level1;
-        //        }
-        //        else
-        //        {
-        //            foreach (var childIons in gsm.ChildMatchedFragmentIons)
-        //            {
-        //                if (childIons.Value.Where(p => (p.NeutralTheoreticalProduct.ProductType == ProductType.b || p.NeutralTheoreticalProduct.ProductType == ProductType.y) && p.NeutralTheoreticalProduct.NeutralLoss > 0).Count() > 0
-        //                    || childIons.Value.Where(p => (p.NeutralTheoreticalProduct.ProductType == ProductType.c && p.NeutralTheoreticalProduct.AminoAcidPosition >= gsm.ModPos[0] - 1) || (p.NeutralTheoreticalProduct.ProductType == ProductType.zDot && p.NeutralTheoreticalProduct.AminoAcidPosition <= gsm.ModPos[0] - 1)).Count() > 0)
-        //                {
-        //                    gsm.LocalizationLevel = LocalizationLevel.Level1;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //}
-    
     }
 }

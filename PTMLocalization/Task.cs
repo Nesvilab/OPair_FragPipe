@@ -26,20 +26,16 @@ namespace PTMLocalization
                 // read internal databases if not passed a full path
                 try
                 {
-                    glycoDatabase = GlobalVariables.OGlycanLocations.Where(p => p.Contains(glycoDatabase)).First();
+                    glycoDatabase = GlobalVariables.OGlycanLocations.First(p => p.Contains(glycoDatabase));
                 }
-                catch (Exception ex)
+                catch (InvalidOperationException)
                 {
                     // ignore - glycans passed as list, not file
                 }
 
             }
 
-            int[] isotopes = new int[maxIsotopeError - minIsotopeError + 1];
-            for (int i = 0; i < isotopes.Length; i++)
-            {
-                isotopes[i] = minIsotopeError + i;
-            }
+            int[] isotopes = Enumerable.Range(minIsotopeError, maxIsotopeError - minIsotopeError + 1).ToArray();
 
             var localizer = new MSFragger_RunLocalization(psmFile, scanpairFile, rawfileDirectory, lcmsFileList, glycoDatabase, 
                 maxNumGlycans, PrecursorMassTolerance, ProductMassTolerance, isotopes, filterOxonium, oxoMinRelativeIntensity, numThreads, allowedSites);

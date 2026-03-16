@@ -37,11 +37,7 @@ namespace CMD
             if (settings.Verbosity == CmdSettings.VerbosityType.minimal || settings.Verbosity == CmdSettings.VerbosityType.normal)
             {
                 Console.WriteLine("Welcome to PTM Localization.");
-            }
-
-            if (settings.Verbosity == CmdSettings.VerbosityType.minimal || settings.Verbosity == CmdSettings.VerbosityType.normal)
-            {
-                Console.WriteLine("PTMLocalization version: " + version);
+                Console.WriteLine($"PTMLocalization version: {version}");
             }
 
             // check settings and trim input paths
@@ -68,7 +64,7 @@ namespace CMD
             if (settings.oxoMinInt < 0 || settings.oxoMinInt > 1)
             {
                 settings.oxoMinInt = 0;
-                Console.WriteLine(String.Format("Invalid oxonium intensity ratio. Please set oxonium ratio between 0 and 1. Oxonium filtering DISABLED"));
+                Console.WriteLine("Invalid oxonium intensity ratio. Please set oxonium ratio between 0 and 1. Oxonium filtering DISABLED");
             }
 
             string[] allowedSites;
@@ -110,7 +106,7 @@ namespace CMD
 
                 var message = "Run failed, Exception: " + e.Message;
 
-                if (settings.Verbosity == CmdSettings.VerbosityType.minimal || settings.Verbosity == CmdSettings.VerbosityType.normal)
+                        if (settings.Verbosity == CmdSettings.VerbosityType.minimal || settings.Verbosity == CmdSettings.VerbosityType.normal)
                 {
                     Console.WriteLine(message);
                     Console.WriteLine(e.StackTrace);
@@ -220,14 +216,10 @@ namespace CMD
             {
                 // confirm the path exists if not using the default (internal) file
                 settings.oxoFilter = settings.oxoFilter.Replace("\"", "").Trim();
-                if (!settings.oxoFilter.Equals("default"))
+                if (!settings.oxoFilter.Equals("default") && !File.Exists(settings.oxoFilter))
                 {
-                    settings.oxoFilter = settings.oxoFilter.Trim();
-                    if (!File.Exists (settings.oxoFilter))
-                    {
-                        Console.WriteLine(String.Format("Oxonium filter file {0} not found. Using default internal filter.", settings.oxoFilter));
-                        settings.oxoFilter = "default";
-                    }
+                    Console.WriteLine($"Oxonium filter file {settings.oxoFilter} not found. Using default internal filter.");
+                    settings.oxoFilter = "default";
                 }
             }
 

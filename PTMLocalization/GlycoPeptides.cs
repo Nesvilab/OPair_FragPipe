@@ -188,22 +188,12 @@ namespace EngineLayer.GlycoSearch
 
         public static bool DissociationTypeContainETD(DissociationType dissociationType)
         {
-            if (dissociationType == DissociationType.ETD || dissociationType == DissociationType.EThcD)
-            {
-                return true;
-            }
-
-            return false;
+            return dissociationType == DissociationType.ETD || dissociationType == DissociationType.EThcD;
         }
 
         public static bool DissociationTypeContainHCD(DissociationType dissociationType)
         {
-            if (dissociationType == DissociationType.HCD || dissociationType == DissociationType.CID || dissociationType == DissociationType.EThcD)
-            {
-                return true;
-            }
-
-            return false;
+            return dissociationType == DissociationType.HCD || dissociationType == DissociationType.CID || dissociationType == DissociationType.EThcD;
         }
 
 

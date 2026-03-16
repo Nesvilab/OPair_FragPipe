@@ -65,29 +65,12 @@ namespace PTMLocalization
 
         public int GetColumnIndex(string columnName)
         {
-            for (int i = 0; i < Headers.Length; i++)
-            {
-                if (Headers[i].Equals(columnName))
-                {
-                    return i;
-                }
-            }
-            return -1;
+            return Array.IndexOf(Headers, columnName);
         }
 
         public double GetMaxDeltaMass()
         {
-            double max = 0;
-            foreach (string PSMline in PSMdata)
-            {
-                string deltaStr = PSMline.Split("\t")[DeltaMassCol];
-                double mass = Double.Parse(deltaStr);
-                if (mass > max)
-                {
-                    max = mass;
-                }
-            }
-            return max;
+            return PSMdata.Max(line => double.Parse(line.Split("\t")[DeltaMassCol]));
         }
 
         /**
@@ -96,12 +79,11 @@ namespace PTMLocalization
         public Dictionary<int, string> GetScanDict(string rawfile)
         {
             Dictionary<int, string> scanDict = new();
-            List<string> psms = RawfilePSMDict[rawfile];
-            foreach (string psm in psms)
+            foreach (string psm in RawfilePSMDict[rawfile])
             {
-                string spectrum = psm.Split("\t")[0];
+                string spectrum = psm.Split("\t")[SpectrumCol];
                 int scanNum = GetScanNum(spectrum);
-                scanDict[scanNum] = psm;  
+                scanDict[scanNum] = psm;
             }
             return scanDict;
         }
@@ -111,13 +93,14 @@ namespace PTMLocalization
             Dictionary<string, List<string>> rawfilePSMDict = new();
             foreach (string PSMline in PSMdata)
             {
-                string spectrum = PSMline.Split("\t")[0];
+                string spectrum = PSMline.Split("\t")[SpectrumCol];
                 string rawfile = GetRawFile(spectrum);
-                if (!rawfilePSMDict.ContainsKey(rawfile))
+                if (!rawfilePSMDict.TryGetValue(rawfile, out List<string> psmList))
                 {
-                    rawfilePSMDict[rawfile] = new List<string>();
+                    psmList = new List<string>();
+                    rawfilePSMDict[rawfile] = psmList;
                 }
-                rawfilePSMDict[rawfile].Add(PSMline);
+                psmList.Add(PSMline);
             }
             return rawfilePSMDict;
         }
@@ -204,12 +187,12 @@ namespace PTMLocalization
 
             if (!overwritePrevious)
             {
-                existingPSMline.InsertRange(insertIndex, gsm.localizerOutput.Split("\t"));
+                existingPSMline.InsertRange(insertIndex, gsm.LocalizerOutput.Split("\t"));
             }
             else
             {
                 // previous scan data exists - overwrite it [NOTE: debugging mode only - not for use with writeToAssignedMods]
-                string[] localizerOutputEntries = gsm.localizerOutput.Split("\t");
+                string[] localizerOutputEntries = gsm.LocalizerOutput.Split("\t");
                 for (int i = 0; i < localizerOutputEntries.Length; i++)     // assumes same length localizer output as before
                 {
                     existingPSMline[insertIndex + i] = localizerOutputEntries[i];
@@ -360,24 +343,11 @@ namespace PTMLocalization
 
     public class ModComparer : IComparer<string>
     {
-        public ModComparer() { }
         public int Compare(string mod1, string mod2)
         {
             int pos1 = int.Parse(Regex.Match(mod1, "[0-9]+").Value);
             int pos2 = int.Parse(Regex.Match(mod2, "[0-9]+").Value);
-
-            if (pos1 < pos2)
-            {
-                return -1;
-            }
-            else if (pos1 == pos2)
-            {
-                return 0;
-            }
-            else
-            {
-                return 1;
-            }
+            return pos1.CompareTo(pos2);
         }
     }
 }

@@ -178,13 +178,13 @@ namespace EngineLayer
             //the index we get from GetClosestFragmentMass is the closest mass, while the acceptable mass we need is between minimumMass and maxMass
             //so the startIndex mass is supposed to be larger than minimumMass, if not , then startIndex increases by 1;
             //the endIndex mass is supposed to be smaller than maxMass, if not , then endIndex decreases by 1;
-            if (DeconvolutedMonoisotopicMasses[startIndex]<minimumMass)
+            if (DeconvolutedMonoisotopicMasses[startIndex] < minimumMass)
             {
-                startIndex = startIndex+1;
+                startIndex++;
             }
-            if(DeconvolutedMonoisotopicMasses[endIndex] > maxMass)
+            if (DeconvolutedMonoisotopicMasses[endIndex] > maxMass)
             {
-                endIndex = endIndex - 1;
+                endIndex--;
             }
             int length = endIndex - startIndex + 1;
 
@@ -222,8 +222,9 @@ namespace EngineLayer
                 intensity = null;
                 return 0;
             }
-            intensity = TheScan.MassSpectrum.YArray[GetClosestFragmentMzIndex(theoreticalMz).Value];
-            return TheScan.MassSpectrum.XArray[GetClosestFragmentMzIndex(theoreticalMz).Value];
+            int index = GetClosestFragmentMzIndex(theoreticalMz).Value;
+            intensity = TheScan.MassSpectrum.YArray[index];
+            return TheScan.MassSpectrum.XArray[index];
         }
 
         private int? GetClosestFragmentMzIndex(double mz)

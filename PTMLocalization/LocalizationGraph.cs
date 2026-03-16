@@ -21,21 +21,6 @@ namespace EngineLayer.GlycoSearch
         public double NoLocalCost{get; set;} //Note that we have node for each glycosite, the matched ions before the first node and after the last node is scored here.
         public double TotalScore { get; set; } //Total score is the score of matched ions that are used for localization. For O-glycan, it is the score of all matched c/zDot ions. 
 
-        //public LocalizationGraph(int[] modPos, ModBox modBox, ModBox[] childModBoxes, int id = 0)
-        //{
-        //    ModPos = modPos;
-        //    ModBox = modBox;
-        //    ModBoxId = id;
-        //    ChildModBoxes = childModBoxes;
-
-        //    //array is localization graph matrix. array is composed of 2d array of node. From left to right, node is build under a glycosite. From up to down, node is build for each child box.
-        //    array = new AdjNode[modPos.Length][];
-        //    for (int i = 0; i < modPos.Length; i++)
-        //    {
-        //        array[i] = new AdjNode[ChildModBoxes.Length];
-        //    }
-        //}
-
         public LocalizationGraph(int[] modPos, string[] modMotifs, ModBox modBox, ModBox[] childModBoxes, int id = 0)
         {
             ModPos = modPos;
@@ -123,14 +108,13 @@ namespace EngineLayer.GlycoSearch
         {
             List<int[]> allPaths = new List<int[]>();
 
-            int xlength = array.Length;
-            int ylength = array.First().Length;
+            int xLength = array.Length;
+            int yLength = array.First().Length;
 
-            int[] temp = new int[xlength];
+            int[] temp = new int[xLength];
+            temp[xLength - 1] = yLength - 1;
 
-            temp[xlength - 1] = ylength -1;
-
-            GetAllHighestScorePathHelper(allPaths, array, xlength -1, ylength -1, temp);
+            GetAllHighestScorePathHelper(allPaths, array, xLength - 1, yLength - 1, temp);
 
             return allPaths;
         }
@@ -149,7 +133,6 @@ namespace EngineLayer.GlycoSearch
                 yind = pre;
                 temp[xind] = yind;
                 GetAllHighestScorePathHelper(allPaths, array, xind, yind, temp);
-
                 xind++;
             }
         }
@@ -157,15 +140,13 @@ namespace EngineLayer.GlycoSearch
         //Get one path of Directed Acyclic Graph by recursion.
         public static int[] GetFirstPath(AdjNode[][] array, ModBox[] boxes)
         {
+            int xLength = array.Length;
+            int yLength = array.First().Length;
 
-            int xlength = array.Length;
-            int ylength = array.First().Length;
+            int[] temp = new int[xLength];
+            temp[xLength - 1] = yLength - 1;
 
-            int[] temp = new int[xlength];
-
-            temp[xlength - 1] = ylength - 1;
-
-            FirstPathHelper(array, xlength - 1, ylength - 1, temp);
+            FirstPathHelper(array, xLength - 1, yLength - 1, temp);
 
             return temp;
         }
@@ -256,17 +237,16 @@ namespace EngineLayer.GlycoSearch
         {
             List<Route> allPaths = new List<Route>();
 
-            int xlength = localizationGraph.array.Length;
-            int ylength = localizationGraph.array.First().Length;
+            int xLength = localizationGraph.array.Length;
+            int yLength = localizationGraph.array.First().Length;
 
-            //temp is a path. check function GetLocalizedPath.
-            int[] temp = new int[xlength];
-            double[] temp_cost = new double[xlength];
+            int[] temp = new int[xLength];
+            double[] temp_cost = new double[xLength];
 
-            //A path in graph localization is always the end of the matrix.
-            temp[xlength - 1] = ylength - 1;
+            // A path in graph localization is always the end of the matrix.
+            temp[xLength - 1] = yLength - 1;
 
-            PathHelper_CalP(allPaths, localizationGraph, xlength - 1, ylength - 1, temp, temp_cost, p, n);
+            PathHelper_CalP(allPaths, localizationGraph, xLength - 1, yLength - 1, temp, temp_cost, p, n);
 
             return allPaths;
         }
@@ -433,13 +413,13 @@ namespace EngineLayer.GlycoSearch
         //The function is for ModBox contains Mod that have different motif. 
         public static bool BoxSatisfyModPos(string[] modMotifs, int ind, ModBox modBox, ModBox childBox)
         {
-            List<string> leftMotifs = modMotifs.Take(ind+1).ToList();
-            List<string> rightMotifs = modMotifs.Skip(ind+1).ToList();
+            List<string> leftMotifs = modMotifs.Take(ind + 1).ToList();
+            List<string> rightMotifs = modMotifs.Skip(ind + 1).ToList();
 
-            //Satisfy left
-            if (childBox.ModMotfis!=null)
+            // Satisfy left
+            if (childBox.ModMotifs != null)
             {
-                foreach (var mn in childBox.ModMotfis) //TO THINK: a potential waste of cycle exist.
+                foreach (var mn in childBox.ModMotifs)
                 {
                     if (!leftMotifs.Contains(mn))
                     {
@@ -449,23 +429,22 @@ namespace EngineLayer.GlycoSearch
                 }
             }
 
-            //Get compliment box motifs
-            List<string> complimentMotif = modBox.ModMotfis.ToList();
-            if (childBox.ModMotfis != null)
+            // Get complement box motifs
+            List<string> complementMotif = modBox.ModMotifs.ToList();
+            if (childBox.ModMotifs != null)
             {
-                foreach (var mn in childBox.ModMotfis)
+                foreach (var mn in childBox.ModMotifs)
                 {
-                    if (!complimentMotif.Contains(mn))
+                    if (!complementMotif.Contains(mn))
                     {
                         return false;
                     }
-                    complimentMotif.Remove(mn);
+                    complementMotif.Remove(mn);
                 }
             }
 
-
-            //Satify right
-            foreach (var mn in complimentMotif)
+            // Satisfy right
+            foreach (var mn in complementMotif)
             {
                 if (!rightMotifs.Contains(mn))
                 {

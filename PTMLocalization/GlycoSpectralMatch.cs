@@ -18,48 +18,33 @@ namespace EngineLayer.GlycoSearch
 
         }
 
-        #region Proterties
+        #region Properties
 
         //Glyco properties
         public List<int> ModPos { get; set; }
         public LocalizationLevel LocalizationLevel { get; set; }
 
-        public string localizerOutput { get; set; }
+        public string LocalizerOutput { get; set; }
 
         public static GlycanBox GetFirstGraphGlycanBox(GlycoSpectralMatch gsm)
         {
-
-            if (gsm.GlycanType == GlycoType.OGlycoPep)
+            int id = gsm.LocalizationGraphs.First().ModBoxId;
+            return gsm.GlycanType switch
             {
-                return GlycanBox.OGlycanBoxes[gsm.LocalizationGraphs.First().ModBoxId];
-            }
-            else if (gsm.GlycanType == GlycoType.NGlycoPep)
-            {
-                return GlycanBox.NGlycanBoxes[gsm.LocalizationGraphs.First().ModBoxId];
-            }
-            else
-            {
-                return GlycanBox.MixedModBoxes[gsm.LocalizationGraphs.First().ModBoxId];
-            }
-
+                GlycoType.OGlycoPep => GlycanBox.OGlycanBoxes[id],
+                GlycoType.NGlycoPep => GlycanBox.NGlycanBoxes[id],
+                _ => GlycanBox.MixedModBoxes[id]
+            };
         }
-        
+
         public static GlycanBox GetGraphGlycanBox(LocalizationGraph graph, GlycoType type)
         {
-
-            if (type == GlycoType.OGlycoPep)
+            return type switch
             {
-                return GlycanBox.OGlycanBoxes[graph.ModBoxId];
-            }
-            else if (type == GlycoType.NGlycoPep)
-            {
-                return GlycanBox.NGlycanBoxes[graph.ModBoxId];
-            }
-            else
-            {
-                return GlycanBox.MixedModBoxes[graph.ModBoxId];
-            }
-
+                GlycoType.OGlycoPep => GlycanBox.OGlycanBoxes[graph.ModBoxId],
+                GlycoType.NGlycoPep => GlycanBox.NGlycanBoxes[graph.ModBoxId],
+                _ => GlycanBox.MixedModBoxes[graph.ModBoxId]
+            };
         }
 
         public static Glycan[] GetFirstGraphGlycans(GlycoSpectralMatch gsm, GlycanBox glycanBox)
@@ -111,7 +96,7 @@ namespace EngineLayer.GlycoSearch
 
         public List<GlycoSite> LocalizedGlycan { get; set; } 
 
-        public double oxoRatio { get; set; }
+        public double OxoRatio { get; set; }
 
         #endregion
 
@@ -127,20 +112,13 @@ namespace EngineLayer.GlycoSearch
                 return local;
             }
             //Some GSP have a lot paths, in which case only output first 10 paths and the total number of the paths.
-            int maxOutputPath = 10;
-            if (routes.Count <= maxOutputPath)
-            {
-                maxOutputPath = routes.Count;
-            }
-
-            int i = 0;
-            while (i < maxOutputPath)
+            int maxOutputPath = Math.Min(routes.Count, 10);
+            for (int i = 0; i < maxOutputPath; i++)
             {
                 var ogl = routes[i];
                 local += "{@" + ogl.ModBoxId.ToString() + "[";
                 var g = string.Join(",", ogl.Mods.Select(p => (p.ModSite - 1).ToString() + "-" + p.GlycanID.ToString()));
                 local += g + "]}";
-                i++;
             }
 
             if (routes.Count > maxOutputPath)
@@ -198,14 +176,12 @@ namespace EngineLayer.GlycoSearch
             Dictionary<int, List<GlycoSite>> idDict = new();
             foreach (GlycoSite site in LocalizedGlycan)
             {
-                if (idDict.ContainsKey(site.GlycanID))
+                if (!idDict.TryGetValue(site.GlycanID, out List<GlycoSite> siteList))
                 {
-                    idDict[site.GlycanID].Add(site);
-                } 
-                else
-                {
-                    idDict[site.GlycanID] = new List<GlycoSite> {site};
+                    siteList = new List<GlycoSite>();
+                    idDict[site.GlycanID] = siteList;
                 }
+                siteList.Add(site);
             }
             return idDict;
         }
@@ -237,22 +213,17 @@ namespace EngineLayer.GlycoSearch
             var sb = new StringBuilder();
             if (LocalizationGraphs != null)
             {
-                sb.Append(LocalizationGraphs.First().TotalScore + "\t");
+                sb.Append(LocalizationGraphs.First().TotalScore); sb.Append("\t");
 
                 var glycanBox = GetFirstGraphGlycanBox(this);
 
-                sb.Append(glycanBox.ModCount + "\t");
-
-                //sb.Append(LocalizationGraphs.First().ModPos.Length + "\t");
-
-                //sb.Append(glycanBox.Mass + "\t");
+                sb.Append(glycanBox.ModCount); sb.Append("\t");
 
                 sb.Append(Glycan.GetFragpipeGlycan(glycanBox.Kind)); sb.Append("\t");
 
-                //Get glycans
                 var glycans = GetFirstGraphGlycans(this, glycanBox);
 
-                sb.Append(string.Join(",", glycans.Select(p => p.Composition).ToArray()));
+                sb.Append(string.Join(",", glycans.Select(p => p.Composition)));
                 sb.Append("\t");
 
                 if (DeltaScoreGraph > -1)
@@ -276,35 +247,21 @@ namespace EngineLayer.GlycoSearch
 
                     string local_peptide = "";
                     string local_protein = "";
-                    if (GlycanType == GlycoType.OGlycoPep)
+                    Glycan[] globalGlycans = GlycanType switch
                     {
-                        LocalizedSiteSpeciLocalInfo(SiteSpeciLocalProb, LocalizedGlycan, OneBasedStartResidueInProtein, GlycanBox.GlobalOGlycans, ref local_peptide, ref local_protein);
-                    }
-                    else if (GlycanType == GlycoType.NGlycoPep)
-                    {
-                        LocalizedSiteSpeciLocalInfo(SiteSpeciLocalProb, LocalizedGlycan, OneBasedStartResidueInProtein, GlycanBox.GlobalNGlycans, ref local_peptide, ref local_protein);
-                    }
-                    else
-                    {
-                        LocalizedSiteSpeciLocalInfo(SiteSpeciLocalProb, LocalizedGlycan, OneBasedStartResidueInProtein, GlycanBox.GlobalMixedGlycans, ref local_peptide, ref local_protein);
-                    }
+                        GlycoType.OGlycoPep => GlycanBox.GlobalOGlycans,
+                        GlycoType.NGlycoPep => GlycanBox.GlobalNGlycans,
+                        _ => GlycanBox.GlobalMixedGlycans
+                    };
+                    LocalizedSiteSpeciLocalInfo(SiteSpeciLocalProb, LocalizedGlycan, OneBasedStartResidueInProtein, globalGlycans, ref local_peptide, ref local_protein);
 
                     sb.Append(local_peptide); sb.Append("\t");
-                    //sb.Append(local_protein); sb.Append("\t");
-
-                    //sb.Append(AllLocalizationInfo(Routes)); sb.Append("\t");
-
-                    //sb.Append(SiteSpeciLocalInfo(SiteSpeciLocalProb)); sb.Append("\t");
                 }
                 else
                 {
                     sb.Append(LocalizationLevel); sb.Append("\t");
-                    //sb.Append("\t");
-                    //sb.Append("\t");
-                    //sb.Append("\t");
-                    //sb.Append("\t");
                 }
-                sb.Append(oxoRatio); sb.Append("\t");
+                sb.Append(OxoRatio); sb.Append("\t");
                 sb.Append(NGlycanMotifExist);
             }
             return sb.ToString();

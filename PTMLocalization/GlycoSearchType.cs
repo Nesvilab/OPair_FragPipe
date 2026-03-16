@@ -2,7 +2,7 @@
 
 namespace EngineLayer.GlycoSearch
 {
-    //Localization of multiple glycans on one peptides can be divide into the following groups based on the quanlity of the localization. Similar to Proteomform Level.
+    // Localization of multiple glycans on one peptide can be divided into the following groups based on the quality of the localization. Similar to Proteoform Level.
     public enum LocalizationLevel
     {
         Level1,

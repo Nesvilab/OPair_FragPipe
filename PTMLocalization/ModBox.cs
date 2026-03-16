@@ -11,13 +11,13 @@ namespace EngineLayer
         public ModBox(int[] modIds, string[] modMotifs)
         {
             ModIds = modIds;
-            ModMotfis = modMotifs;
+            ModMotifs = modMotifs;
             ModCount = modIds.Length;
         }
 
         public int[] ModIds { get;  }
 
-        public string[] ModMotfis { get; set; }
+        public string[] ModMotifs { get; set; }
 
         public int ModCount { get; }
 

@@ -97,23 +97,20 @@ namespace EngineLayer
         //After O-glycans are read in from database, we build combinations of glycans into GlycanBox. The maxNum is maximum glycans allowed on one peptides.
         public static IEnumerable<GlycanBox> BuildGlycanBoxes(int maxNum, Glycan[] glycans, Modification[] modifications, int maxThreads = 1, double maxMass = 10000)
         {
+            // sequential: boxes of equal mass keep this order through OrderBy(Mass), and it decides ties between equally scored localizations
             List<GlycanBox> results = new List<GlycanBox>();
-            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = maxThreads };
             for (int i = 1; i <= maxNum; i++)
             {
-                Parallel.ForEach(Glycan.GetKCombsWithRept(Enumerable.Range(0, glycans.Length), i), options, idCombine =>
+                foreach (var idCombine in Glycan.GetKCombsWithRept(Enumerable.Range(0, glycans.Length), i))
                 {
                     var motifs = GetGlycanBoxMotifs(idCombine.ToArray(), modifications);
                     GlycanBox glycanBox = new GlycanBox(idCombine.ToArray(), motifs, glycans, modifications);
                     if (glycanBox.Mass <= maxMass) 
                     { 
                         glycanBox.ChildGlycanBoxes = BuildChildGlycanBoxes(glycanBox.ModIds, glycans, modifications).ToArray();
-                        lock (results)
-                        {
-                            results.Add(glycanBox);
-                        }
+                        results.Add(glycanBox);
                     }
-                });
+                }
             }
             return results;
         }

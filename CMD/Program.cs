@@ -14,7 +14,7 @@ namespace CMD
     public static class Program
     {
         private static CmdSettings CommandLineSettings;
-        private static readonly string version = "1.1.10";
+        private static readonly string version = "1.1.11";
 
         public static int Main(string[] args)
         {

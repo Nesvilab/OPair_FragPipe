@@ -314,6 +314,10 @@ namespace PTMLocalization
             System.Diagnostics.Stopwatch totalTimer = new();
             totalTimer.Start();
 
+            // mzLib fills its static per-dissociation-type tables on the first Fragment call and reads them without a lock, so a thread
+            // can throw while another fills them. Fill them here, before PSMs are localized in parallel, with the call LocalizeOGlyc makes.
+            new PeptideWithSetModifications("PEPTIDE", new Dictionary<string, Modification>()).Fragment(DissociationType.ETD, FragmentationTerminus.Both, new List<Product>());
+
             foreach (KeyValuePair<string, List<string>> rawfileEntry in PSMtable.RawfilePSMDict)
             {
                 // load raw file and pairs table

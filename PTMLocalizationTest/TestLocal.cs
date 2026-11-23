@@ -23,7 +23,8 @@ namespace PTMLocalizationTest
         [OneTimeSetUp]
         public static void Setup()
         {
-            GlobalVariables.SetUpGlobalVariables(null, null, null);
+            // glycan_mods.txt defines residues the default oxonium filters use (e.g. Phospho); FragPipe passes it with -y
+            GlobalVariables.SetUpGlobalVariables(null, null, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Glycan_Mods", "glycan_mods.txt"));
             GlycanBox.GlobalOGlycans = GlycanDatabase.LoadGlycan(GlobalVariables.OGlycanLocations.Where(p => p.Contains("OGlycan.gdb")).First(), true, true).ToArray();
             GlycanBox.GlobalOGlycanMods = GlycanBox.BuildGlobalOGlycanMods(GlycanBox.GlobalOGlycans).ToArray();
             GlycanBox.OGlycanBoxes = GlycanBox.BuildGlycanBoxes(3, GlycanBox.GlobalOGlycans, GlycanBox.GlobalOGlycanMods).OrderBy(p => p.Mass).ToArray();

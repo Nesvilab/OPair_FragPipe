@@ -30,6 +30,27 @@ namespace PTMLocalizationTest
             GlycanBox.OGlycanBoxes = GlycanBox.BuildGlycanBoxes(3, GlycanBox.GlobalOGlycans, GlycanBox.GlobalOGlycanMods).OrderBy(p => p.Mass).ToArray();
         }
 
+        [Test]
+        public static void OGlycoTest_GlycanBoxOrderIndependentOfThreads()
+        {
+            // Boxes of equal mass keep their build order through OrderBy(Mass), and that order decides ties between equally scored localizations,
+            // so it must be the enumeration order for any thread count (0 = default parallelism, as with -t 0).
+            var expected = Enumerable.Range(1, 3)
+                .SelectMany(k => Glycan.GetKCombsWithRept(Enumerable.Range(0, GlycanBox.GlobalOGlycans.Length), k))
+                .Select(ids => string.Join(",", ids))
+                .ToList();
+            foreach (int threads in new[] { 1, 8, 0 })
+            {
+                for (int repeat = 0; repeat < 3; repeat++)
+                {
+                    var actual = GlycanBox.BuildGlycanBoxes(3, GlycanBox.GlobalOGlycans, GlycanBox.GlobalOGlycanMods, threads, double.MaxValue)
+                        .Select(p => p.GlycanIdString)
+                        .ToList();
+                    Assert.That(actual, Is.EqualTo(expected), $"maxThreads = {threads}, repeat {repeat}");
+                }
+            }
+        }
+
 
         [Test]
         public static void OGlycoTest_LocalizeMod()
